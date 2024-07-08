@@ -24,7 +24,7 @@ Process of installation (is not necessary if you have this proyect)
 
 * Initialize a new npm project: `npm init -y`
 
-* Modify package.json: `"test": "node --watch server.js"`
+* Modify package.json: `"test": "node --watch src/app.js"`
 
 The following installation is required:
 
