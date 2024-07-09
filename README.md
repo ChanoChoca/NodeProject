@@ -36,6 +36,62 @@ Testing
   npm run test
 ```
 
+# In Postman:
+
+## Products
+
+```http
+  GET http://localhost:8080/api/products/
+```
+
+```http
+  GET http://localhost:8080/api/products/:pid
+```
+
+```http
+  POST http://localhost:8080/api/products/
+```
+
+```http
+  PUT http://localhost:8080/api/products/:pid
+```
+
+```http
+  DELETE http://localhost:8080/api/products/:pid
+```
+
+| Parameter     | Type      | Description                           |
+|:--------------|:----------|:--------------------------------------|
+| `id`          | `number`  | **Not required**. Your product id key |
+| `title`       | `string`  | **Required**. Your title              |
+| `description` | `string`  | **Required**. Your description        |
+| `code`        | `string`  | **Required**. Your code               |
+| `price`       | `number`  | **Required**. Your price              |
+| `status`      | `boolean` | **Not required**. Your status         |
+| `stock`       | `number`  | **Required**. Your stock              |
+| `category`    | `string`  | **Required**. Your category           |
+| `thumbnails`  | `array`   | **Not required**. Your thumbnails     |
+
+
+## Carts
+
+```http
+  POST http://localhost:8080/api/carts/
+```
+
+```http
+  GET http://localhost:8080/api/carts/:cid
+```
+
+```http
+  POST http://localhost:8080/api/carts/:cid/product/:pid
+```
+
+| Parameter  | Type     | Description                        |
+|:-----------|:---------|:-----------------------------------|
+| `id`       | `number` | **Not required**. Your cart id key |
+| `products` | `array`  | **Required**. Your products        |
+
 
 ## Authors
 
