@@ -39,6 +39,9 @@ router.post('/', (req, res) => {
         if (!products[i].hasOwnProperty('quantity')) {
             return res.status(400).send(`Product at index ${i} does not have a quantity`);
         }
+        if (typeof products[i].quantity !== "number" || products[i].quantity <= 0) {
+            return res.status(400).send('Invalid data format for product fields');
+        }
     }
 
     const newCart = {

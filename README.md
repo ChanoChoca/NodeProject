@@ -72,6 +72,7 @@ Testing
 | `category`    | `string`  | **Required**. Your category           |
 | `thumbnails`  | `array`   | **Not required**. Your thumbnails     |
 
+### Note: `price` and `stock` must be >= 0.
 
 ## Carts
 
@@ -92,6 +93,13 @@ Testing
 | `id`       | `number` | **Not required**. Your cart id key |
 | `products` | `array`  | **Required**. Your products        |
 
+### For products parameter
+| Parameter   | Type     | Description                                  |
+|:------------|:---------|:---------------------------------------------|
+| `productId` | `number` | **Not required**. Your product id key        |
+| `quantity`  | `array`  | **Required only in post `'/'`**. Your quantity |
+
+### Note: `quantity` must be > 0.
 
 ## Authors
 

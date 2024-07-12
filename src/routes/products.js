@@ -47,8 +47,8 @@ router.post('/', (req, res) => {
         typeof title !== 'string' ||
         typeof description !== 'string' ||
         typeof code !== 'string' ||
-        typeof price !== 'number' ||
-        typeof stock !== 'number' ||
+        typeof price !== 'number' || price < 0 ||
+        typeof stock !== 'number' || stock < 0 ||
         typeof category !== 'string' ||
         !Array.isArray(thumbnails)
     ) {
@@ -97,7 +97,7 @@ router.put('/:pid', (req, res) => {
             return typeof updates[key] === 'string'; // Verify that the type is string for these fields
         }
         if (key === 'price' || key === 'stock') {
-            return typeof updates[key] === 'number'; // Verify that the type is number for these fields
+            return typeof updates[key] === 'number' && updates[key] >= 0; // Verify that the type is number for these fields and >= 0
         }
         if (key === 'status') {
             return typeof updates[key] === 'boolean'; // Verify that the type is boolean for status
