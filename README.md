@@ -94,10 +94,10 @@ Testing
 | `products` | `array`  | **Required**. Your products        |
 
 ### For products parameter
-| Parameter   | Type     | Description                                  |
-|:------------|:---------|:---------------------------------------------|
-| `productId` | `number` | **Not required**. Your product id key        |
-| `quantity`  | `array`  | **Required only in post `'/'`**. Your quantity |
+| Parameter   | Type     | Description                                   |
+|:------------|:---------|:----------------------------------------------|
+| `productId` | `number` | **Not required**. Your product id key         |
+| `quantity`  | `array`  | **Required only in `'/' POST`**. Your quantity|
 
 ### Note: `quantity` must be > 0.
 
