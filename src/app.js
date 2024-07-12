@@ -1,8 +1,11 @@
 const express = require('express');
 
 const app = express();
-app.use(express.json()); // Middleware to parse JSON
-app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded
+
+//Now the server will be able to receive jsons at the time of the request
+app.use(express.json());
+//Allows you to send information also from the URL
+app.use(express.urlencoded({ extended: true }));
 
 const productsRouter = require('./routes/products.js');
 const cartsRouter = require('./routes/carts.js');

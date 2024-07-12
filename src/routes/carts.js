@@ -33,8 +33,11 @@ router.post('/', (req, res) => {
 
     // Validate each product to ensure it has a valid productId
     for (let i = 0; i < products.length; i++) {
-        if (!products[i].hasOwnProperty('productId')) { //hasOwnProperty checks whether the object has a property directly defined on itself
+        if (!products[i].hasOwnProperty('productId')) { //hasOwnProperty returns a boolean indicating whether the object has the specified property.
             return res.status(400).send(`Product at index ${i} does not have a productId`);
+        }
+        if (!products[i].hasOwnProperty('quantity')) {
+            return res.status(400).send(`Product at index ${i} does not have a quantity`);
         }
     }
 
