@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Real-Time Products</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    </head>
+    <body style="background-color: #212529; color: #fff">
+        <h1 class="text-center my-5">Real-Time Product List</h1>
+
+        <section class="container">
+            <table class="table table-info table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Unit Price</th>
+                    <th scope="col">Units In Stock</th>
+                    <th scope="col">Discontinued</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each products}}
+                    <tr>
+                        <td>{{this.name}}</td>
+                        <td>{{this.unitPrice}}</td>
+                        <td>{{this.unitsInStock}}</td>
+                        <td>{{this.discontinued}}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="container">
+            <form id="product-form">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Product Name</label>
+                    <input type="text" class="form-control" name="name" placeholder="Product Name" id="name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="price" class="form-label">Unit Price</label>
+                    <input type="number" class="form-control" name="unitPrice" placeholder="Unit Price" id="price" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <label for="stock" class="form-label">Units In Stock</label>
+                    <input type="number" class="form-control" name="unitsInStock" placeholder="Units In Stock" id="stock" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="discontinued" name="discontinued">
+                    <label class="form-check-label" for="discontinued">Discontinued</label>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Add Product</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="container mt-5">
+            <form id="delete-form">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Product Name to Delete</label>
+                    <input type="text" class="form-control" name="name" placeholder="Product Name to Delete" id="name" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Delete Product</button>
+                </div>
+            </form>
+        </section>
+
+        <div class="text-center mt-5">
+            <a href="/" class="btn btn-primary">Go to Home</a>
+        </div>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/index.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    </body>
+</html>
