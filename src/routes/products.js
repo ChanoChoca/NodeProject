@@ -50,7 +50,7 @@ router.post('/', (req, res) => {
         typeof price !== 'number' || price < 0 ||
         typeof stock !== 'number' || stock < 0 ||
         typeof category !== 'string' ||
-        !Array.isArray(thumbnails)
+        (thumbnails !== undefined && !Array.isArray(thumbnails))
     ) {
         return res.status(400).send('Invalid data format for product fields');
     }
@@ -114,6 +114,11 @@ router.put('/:pid', (req, res) => {
 
     // Update allowed properties on the found product
     Object.assign(product, updates);
+
+    // Ensure thumbnails is an array if it was updated
+    if (updates.hasOwnProperty('thumbnails')) {
+        product.thumbnails = Array.isArray(updates.thumbnails) ? updates.thumbnails : [];
+    }
 
     writeProducts();
     res.json(product);
