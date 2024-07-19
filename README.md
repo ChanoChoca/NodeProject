@@ -97,7 +97,7 @@ Testing
 | Parameter   | Type     | Description                                   |
 |:------------|:---------|:----------------------------------------------|
 | `productId` | `number` | **Not required**. Your product id key         |
-| `quantity`  | `array`  | **Required only in `'/' POST`**. Your quantity|
+| `quantity`  | `number` | **Required only in `'/' POST`**. Your quantity|
 
 ### Note: `quantity` must be > 0.
 
