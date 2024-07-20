@@ -15,6 +15,7 @@ const products = [];
 
 // Esta función agrega un producto al array 'products'. El producto es un objeto que se añade al final de la lista.
 export function addProduct(product) {
+    product.id = products.length + 1;
     products.push(product);
 }
 
@@ -23,7 +24,7 @@ export function addProduct(product) {
 export function deleteProduct(name) {
     const index = products.findIndex(p => p.name === name);
     if (index !== -1) {
-        products.splice(index, 1);
+        return products.splice(index, 1)[0];
     }
 }
 

@@ -1,6 +1,9 @@
 // 'io()' establece una conexión con el servidor de Socket.IO, permitiendo la comunicación en tiempo real.
 const socket = io();
 
+// CLIENT SIDE
+
+// HTML Listener
 // Se añade un evento que se activa cuando se envía el formulario con el ID 'product-form'.
 // 'event.preventDefault()' evita que el formulario se envíe de la manera tradicional (recargando la página).
 document.getElementById('product-form').addEventListener('submit', (event) => {
@@ -14,6 +17,7 @@ document.getElementById('product-form').addEventListener('submit', (event) => {
         unitsInStock: parseInt(formData.get('unitsInStock'), 10),
         discontinued: formData.get('discontinued') === 'on'
     };
+    // Enviar datos al servidor
     // 'fetch' realiza una solicitud POST a '/add-product' con los datos del producto en formato 'application/x-www-form-urlencoded'.
     // Después de enviar la solicitud, se resetea el formulario para limpiar los campos.
     fetch('/add-product', {
@@ -25,6 +29,7 @@ document.getElementById('product-form').addEventListener('submit', (event) => {
     })
 })
 
+// HTML Listener
 // Se añade un evento que se activa cuando se envía el formulario con el ID 'delete-form'.
 // 'event.preventDefault()' evita el comportamiento predeterminado de envío del formulario.
 document.getElementById('delete-form').addEventListener('submit', (event) => {
@@ -49,6 +54,7 @@ socket.on('productAdded', (product) => {
     const productTable = document.querySelector('table tbody');
     const row = document.createElement('tr');
     row.innerHTML = `
+        <td>${product.id}</td>
         <td>${product.name}</td>
         <td>${product.unitPrice}</td>
         <td>${product.unitsInStock}</td>
@@ -63,7 +69,7 @@ socket.on('productDeleted', (productName) => {
     const productTable = document.querySelector('table tbody');
     const rows = productTable.getElementsByTagName('tr');
     for (let i = 0; i < rows.length; i++) {
-        if (rows[i].cells[0].textContent === productName) {
+        if (rows[i].cells[1].textContent === productName) {
             productTable.removeChild(rows[i]);
             break;
         }

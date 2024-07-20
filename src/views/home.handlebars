@@ -10,9 +10,10 @@
         <h1 class="text-center my-5">Product List</h1>
 
         <section class="container">
-            <table class="table table-info table-striped">
+            <table class="table table-info table-striped" id="table">
                 <thead>
                 <tr>
+                    <th scope="col">ID</th>
                     <th scope="col">Name</th>
                     <th scope="col">Unit Price</th>
                     <th scope="col">Units In Stock</th>
@@ -22,6 +23,7 @@
                 <tbody>
                 {{#each products}}
                     <tr>
+                        <td>{{this.id}}</td>
                         <td>{{this.name}}</td>
                         <td>{{this.unitPrice}}</td>
                         <td>{{this.unitsInStock}}</td>

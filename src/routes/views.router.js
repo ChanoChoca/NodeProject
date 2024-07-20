@@ -5,6 +5,8 @@ import { body, validationResult } from 'express-validator';
 // Estas funciones ('addProduct', 'deleteProduct', y 'getProducts') se utilizan para manejar la lógica de productos, como agregar, eliminar y obtener productos.
 import { addProduct, deleteProduct, getProducts } from '../utils.js'
 
+// SERVER SIDE
+
 // 'router' es una instancia de 'Router' que se utiliza para definir rutas específicas para este enrutador, en lugar de definirlas directamente en la aplicación principal.
 const router = express.Router()
 
