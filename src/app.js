@@ -25,9 +25,7 @@ app.use(express.urlencoded({ extended: true }))
 
 // 'app.engine' define que los archivos '.handlebars' se procesen con 'express-handlebars'.
 // 'defaultLayout: null' indica que no se utilizará una plantilla de diseño por defecto.
-app.engine('handlebars', handlebars.engine({
-    defaultLayout: null
-}))
+app.engine('handlebars', handlebars.engine())
 // Define el directorio donde Express buscará los archivos de plantillas ('handlebars').
 // '__dirname + '/views'' construye la ruta absoluta al directorio 'views'.
 app.set('views', __dirname + '/views')
