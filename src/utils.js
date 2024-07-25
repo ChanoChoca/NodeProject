@@ -1,38 +1,56 @@
-// Esta función convierte una URL de tipo file: a una ruta de archivo del sistema de archivos.
-// Se utiliza para obtener la ruta del archivo actual en entornos de módulos ES.
-import {fileURLToPath} from 'url'
-// Esta función devuelve el directorio del nombre de archivo especificado.
-// Es útil para construir rutas absolutas en el sistema de archivos.
-import {dirname} from 'path'
-// 'import.meta.url' proporciona la URL del módulo actual, y 'fileURLToPath' convierte esta URL en una ruta de archivo del sistema.
-// '__filename' contiene la ruta absoluta al archivo actual.
-const __filename = fileURLToPath(import.meta.url)
-// 'dirname' toma la ruta del archivo ('__filename') y devuelve el directorio que contiene el archivo.
-// '__dirname' contiene la ruta absoluta al directorio del archivo actual.
-const __dirname = dirname(__filename)
+import fs from 'fs'; // Importa el módulo para operaciones con el sistema de archivos
+import path from 'path'; // Importa el módulo para manipulación de rutas
+import { fileURLToPath } from 'url'; // Importa el módulo para convertir URLs en rutas de archivos
 
-const products = [];
+// Obtener la ruta del archivo JSON
+const __filename = fileURLToPath(import.meta.url); // Obtiene el nombre del archivo actual
+const __dirname = path.dirname(__filename); // Obtiene el directorio del archivo actual
 
-// Esta función agrega un producto al array 'products'. El producto es un objeto que se añade al final de la lista.
-export function addProduct(product) {
-    product.id = products.length + 1;
-    products.push(product);
-}
+// Ruta al archivo JSON de productos
+const productsFilePath = path.join(__dirname, 'data', 'products.json');
 
-// Esta función elimina un producto del array 'products' basado en su nombre.
-// Utiliza 'findIndex' para encontrar el índice del producto en la lista y 'splice' para eliminarlo si se encuentra (es decir, si 'index' no es '-1').
-export function deleteProduct(name) {
-    const index = products.findIndex(p => p.name === name);
-    if (index !== -1) {
-        return products.splice(index, 1)[0];
+// Función para leer los productos desde el archivo JSON
+export function readProducts() {
+    if (fs.existsSync(productsFilePath)) { // Verifica si el archivo de productos existe
+        return JSON.parse(fs.readFileSync(productsFilePath, 'utf8')); // Lee y parsea el contenido del archivo
     }
+    return []; // Retorna un array vacío si el archivo no existe
 }
 
-// Esta función devuelve el array 'products'. Permite obtener la lista actual de productos.
-export function getProducts() {
-    return products;
+// Función para guardar productos en el archivo JSON
+export function writeProducts(products) {
+    if (!products) { // Verifica que los productos no sean undefined
+        throw new Error('Cannot write undefined products'); // Lanza un error si es undefined
+    }
+    const data = JSON.stringify(products, null, 2); // Convierte los productos a formato JSON
+    if (data === undefined) { // Verifica que los datos no sean undefined
+        throw new Error('Cannot stringify products'); // Lanza un error si es undefined
+    }
+    fs.writeFileSync(productsFilePath, data, 'utf8'); // Escribe los datos en el archivo
 }
 
-// '__dirname' se exporta como el valor por defecto del módulo, proporcionando la ruta del directorio en el que se encuentra el archivo actual.
-// Esto es útil para construir rutas absolutas basadas en la ubicación del módulo.
-export default __dirname
+// Ruta al archivo JSON de carritos
+const cartsFilePath = path.join(__dirname, 'data', 'carts.json');
+
+// Función para leer los carritos desde el archivo JSON
+export function readCarts() {
+    if (fs.existsSync(cartsFilePath)) { // Verifica si el archivo de carritos existe
+        return JSON.parse(fs.readFileSync(cartsFilePath, 'utf8')); // Lee y parsea el contenido del archivo
+    }
+    return []; // Retorna un array vacío si el archivo no existe
+}
+
+// Función para guardar carritos en el archivo JSON
+export function writeCarts(carts) {
+    if (!carts) { // Verifica que los carritos no sean undefined
+        throw new Error('Cannot write undefined products'); // Lanza un error si es undefined
+    }
+    const data = JSON.stringify(carts, null, 2); // Convierte los carritos a formato JSON
+    if (data === undefined) { // Verifica que los datos no sean undefined
+        throw new Error('Cannot stringify products'); // Lanza un error si es undefined
+    }
+    fs.writeFileSync(cartsFilePath, data, 'utf8'); // Escribe los datos en el archivo
+}
+
+// Exporta el directorio actual para su uso en otros módulos
+export default __dirname;

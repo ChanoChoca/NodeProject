@@ -16,8 +16,7 @@ A Node project made with Express, where it is carried out thanks to the React co
 - npm
 - Node
 - Express
-- Handlebars
-- Socket.io
+
 
 ## Installation and Testing
 
@@ -27,57 +26,50 @@ Process of installation (is not necessary if you have this proyect)
 
 * Modify package.json: `"test": "node --watch src/app.js"`
 
-## The following installation is required:
+The following installation is required:
 
-* Install: `npm install express express-handlebars socket.io express-validator`
+* Install Express: `npm install express`
 
-## Testing
+Testing
 
 ```bash
-  npm start
+  npm run test
 ```
 
-## In the browser
+# In Postman:
+
+## Products
 
 ```http
-  GET http://localhost:8080/
+  GET http://localhost:8080/api/products/
 ```
 
 ```http
-  GET http://localhost:8080/realtimeproducts
+  GET http://localhost:8080/api/products/:pid
 ```
-
-## In Postman:
 
 ```http
-  POST http://localhost:8080/add-product
+  POST http://localhost:8080/api/products/
 ```
-
-| Parameter      | Type      | Description                     |
-|:---------------|:----------|:--------------------------------|
-| `name`         | `string`  | **Required**. Your product name |
-| `unitPrice`    | `number`  | **Required**. Your unit price   |
-| `unitsInStock` | `number`  | **Required**. Your stock        |
-| `discontinued` | `boolean` | **Required**. Your check        |
 
 ```http
-  PUT http://localhost:8080/delete-product
+  PUT http://localhost:8080/api/products/:pid
 ```
 
-| Parameter      | Type      | Description                     |
-|:---------------|:----------|:--------------------------------|
-| `name`         | `string`  | **Required**. Your product name |
+```http
+  DELETE http://localhost:8080/api/products/:pid
+```
 
+| Parameter     | Type      | Description                           |
+|:--------------|:----------|:--------------------------------------|
+| `id`          | `number`  | **Not required**. Your product id key |
+| `title`       | `string`  | **Required**. Your title              |
+| `description` | `string`  | **Required**. Your description        |
+| `code`        | `string`  | **Required**. Your code               |
+| `price`       | `number`  | **Required**. Your price              |
+| `status`      | `boolean` | **Not required**. Your status         |
+| `stock`       | `number`  | **Required**. Your stock              |
+| `category`    | `string`  | **Required**. Your category           |
+| `thumbnails`  | `array`   | **Not required**. Your thumbnails     |
 
-## Authors
-
-- [@Juan Ignacio Caprioli (ChanoChoca)](https://github.com/ChanoChoca)
-
-
-## Badges
-
-[//]: # (Add badges from somewhere like: [shields.io]&#40;https://shields.io/&#41;)
-
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
-[![AGPL License](https://img.shields.io/badge/license-AGPL-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
+### Note: `price` and `stock` must be >= 0.

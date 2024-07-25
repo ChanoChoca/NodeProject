@@ -1,77 +1,80 @@
-// 'io()' establece una conexión con el servidor de Socket.IO, permitiendo la comunicación en tiempo real.
-const socket = io();
+document.addEventListener('DOMContentLoaded', () => {
+    const socket = io(); // Conecta con el servidor de Socket.IO
 
-// CLIENT SIDE
+    const productForm = document.getElementById('productForm'); // Obtiene el formulario de productos
+    const productTable = document.getElementById('productTable'); // Obtiene la tabla de productos
 
-// HTML Listener
-// Se añade un evento que se activa cuando se envía el formulario con el ID 'product-form'.
-// 'event.preventDefault()' evita que el formulario se envíe de la manera tradicional (recargando la página).
-document.getElementById('product-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    // 'event.target' se refiere al formulario que se envió, y FormData permite obtener los valores de los campos del formulario.
-    const formData = new FormData(event.target);
-    // Se obtienen los valores del formulario y se convierten al tipo adecuado ('parseFloat', 'parseInt', y booleano para 'discontinued').
-    const product = {
-        name: formData.get('name'),
-        unitPrice: parseFloat(formData.get('unitPrice')),
-        unitsInStock: parseInt(formData.get('unitsInStock'), 10),
-        discontinued: formData.get('discontinued') === 'on'
-    };
-    // Enviar datos al servidor
-    // 'fetch' realiza una solicitud POST a '/add-product' con los datos del producto en formato 'application/x-www-form-urlencoded'.
-    // Después de enviar la solicitud, se resetea el formulario para limpiar los campos.
-    fetch('/add-product', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(product)
-    }).then(() => {
-        event.target.reset();
-    })
-})
+    // Actualiza la tabla cuando el servidor envíe una actualización de productos
+    socket.on('updateProducts', (products) => {
+        productTable.innerHTML = ''; // Limpia la tabla antes de actualizar
 
-// HTML Listener
-// Se añade un evento que se activa cuando se envía el formulario con el ID 'delete-form'.
-// 'event.preventDefault()' evita el comportamiento predeterminado de envío del formulario.
-document.getElementById('delete-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    // 'FormData' se usa para extraer el valor del campo name del formulario.
-    const formData = new FormData(event.target);
-    const name = formData.get('name');
-    // 'fetch' realiza una solicitud POST a '/delete-product' con el nombre del producto en formato 'application/x-www-form-urlencoded'.
-    // Después de enviar la solicitud, se resetea el formulario.
-    fetch('/delete-product', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ name })
-    }).then(() => {
-        event.target.reset();
-    });
-});
-
-// Cuando el servidor emite un evento 'productAdded', el cliente recibe los datos del producto y actualiza la lista de productos en tiempo real.
-// Se crea un nuevo elemento '<tr>' y se añade <td> para visualizar los detalles del producto.
-socket.on('productAdded', (product) => {
-    const productTable = document.querySelector('table tbody');
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${product.id}</td>
-        <td>${product.name}</td>
-        <td>${product.unitPrice}</td>
-        <td>${product.unitsInStock}</td>
-        <td>${product.discontinued}</td>
+        // Crear encabezado de la tabla
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th>Category</th>
+            <th>Thumbnails</th>
+        </tr>
     `;
-    productTable.appendChild(row);
-});
+        productTable.appendChild(thead);
 
-// Cuando el servidor emite un evento 'productDeleted', el cliente recibe el nombre del producto eliminado y actualiza la lista de productos en tiempo real.
-// Busca el producto en la fila de la tabla ('<tr>') y elimina el elemento correspondiente si encuentra una coincidencia.
-socket.on('productDeleted', (productName) => {
-    const productTable = document.querySelector('table tbody');
-    const rows = productTable.getElementsByTagName('tr');
-    for (let i = 0; i < rows.length; i++) {
-        if (rows[i].cells[1].textContent === productName) {
-            productTable.removeChild(rows[i]);
-            break;
+        const tbody = document.createElement('tbody');
+        products.forEach(product => {
+            const row = tbody.insertRow(); // Crea una nueva fila para cada producto
+            row.insertCell(0).textContent = product.id; // ID del producto
+            row.insertCell(1).textContent = product.title; // Título del producto
+            row.insertCell(2).textContent = product.description; // Descripción del producto
+            row.insertCell(3).textContent = product.price; // Precio del producto
+            row.insertCell(4).textContent = product.stock; // Stock del producto
+            row.insertCell(5).textContent = product.status ? 'Active' : 'Inactive'; // Estado del producto
+            row.insertCell(6).textContent = product.category; // Categoría del producto
+
+            // Agrega miniaturas del producto
+            const thumbnailsCell = row.insertCell(7);
+            product.thumbnails.forEach(thumbnail => {
+                const img = document.createElement('img');
+                img.src = thumbnail;
+                img.alt = 'thumbnail';
+                img.style.maxWidth = '100px'; // Estilo para la miniatura
+                img.style.maxHeight = '100px'; // Estilo para la miniatura
+                thumbnailsCell.appendChild(img); // Agrega la imagen a la celda
+            });
+        });
+        productTable.appendChild(tbody); // Agrega el cuerpo de la tabla a la tabla
+    });
+
+    // Maneja el envío del formulario para agregar un producto
+    productForm.addEventListener('submit', (event) => {
+        event.preventDefault(); // Previene el comportamiento por defecto del formulario
+
+        // Obtiene los datos del formulario y crea un objeto de producto
+        const formData = new FormData(productForm);
+        const product = {
+            title: formData.get('title'),
+            description: formData.get('description'),
+            code: formData.get('code'),
+            price: parseFloat(formData.get('price')),
+            status: formData.get('status') === 'true',
+            stock: parseInt(formData.get('stock'), 10),
+            category: formData.get('category'),
+            thumbnails: formData.get('thumbnails').split(',').map(url => url.trim()) // Convierte la cadena de miniaturas a un array de URLs
+        };
+
+        socket.emit('addProduct', product); // Envía el nuevo producto al servidor
+        productForm.reset(); // Resetea el formulario
+    });
+
+    // Maneja la eliminación de productos al hacer clic en el botón de eliminar
+    productTable.addEventListener('click', (event) => {
+        if (event.target.classList.contains('deleteButton')) {
+            const productId = parseInt(event.target.dataset.productId, 10); // Obtiene el ID del producto desde el atributo de datos
+            socket.emit('deleteProduct', productId); // Envía el ID del producto para eliminarlo
         }
-    }
+    });
 });

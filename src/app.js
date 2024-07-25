@@ -1,52 +1,60 @@
-// Este módulo es un framework para Node.js que simplifica la creación y manejo de servidores HTTP.
-import express from 'express'
+import express from 'express'; // Importa el módulo Express para crear el servidor
+import handlebars from 'express-handlebars'; // Importa el motor de plantillas Handlebars
+import { Server } from 'socket.io'; // Importa Socket.IO para manejo de WebSockets
+import productsRouter from './routes/products.js'; // Importa el enrutador para productos
+import cartsRouter from './routes/carts.js'; // Importa el enrutador para carritos
+import viewsRouter from './routes/views.router.js'; // Importa el enrutador para vistas
+import __dirname, { readProducts, writeProducts, readCarts, writeCarts } from './utils.js'; // Importa utilidades y datos
 
-// Este módulo proporciona una forma de usar Handlebars como motor de plantillas con Express.
-import handlebars from 'express-handlebars'
-// '__dirname' es una variable que contiene el directorio actual del archivo.
-// Se utiliza para construir rutas absolutas en el sistema de archivos.
-import __dirname from './utils.js'
-// 'viewsRouter' es un enrutador Express que maneja las solicitudes HTTP relacionadas con las vistas (rutas) de la aplicación.
-import viewsRouter from './routes/views.router.js'
-// Este módulo se utiliza para configurar y manejar conexiones WebSocket en el servidor.
-import { Server } from 'socket.io'
+const app = express(); // Crea una instancia de Express
+const PORT = 8080; // Define el puerto en el que se ejecutará el servidor
 
-// 'app' es el objeto principal que manejará las solicitudes HTTP y configurará los middleware y rutas.
-const app = express()
-// El servidor escuchará en el puerto 8080
-const PORT = 8080
+const products = readProducts(); // Lee los productos desde el archivo
+const carts = readCarts(); // Lee los carritos desde el archivo
 
-// 'express.static' sirve archivos estáticos (como JavaScript, CSS y imágenes) desde el directorio src/public.
-app.use(express.static('src/public'))
+// Configuración de Handlebars
+app.engine('handlebars', handlebars.engine()); // Configura Handlebars como motor de plantillas
+app.set('view engine', 'handlebars'); // Establece Handlebars como motor de vistas
+app.set('views', __dirname + '/views'); // Define el directorio de vistas
 
-app.use(express.json())
-// 'express.urlencoded' permite que el servidor analice datos de formularios HTML (en formato URL-encoded).
-app.use(express.urlencoded({ extended: true }))
+// Middleware para servir archivos estáticos
+app.use(express.static('src/public')); // Sirve archivos estáticos desde el directorio 'src/public'
+app.use(express.json()); // Middleware para parsear cuerpos de solicitud en formato JSON
+app.use(express.urlencoded({ extended: true })); // Middleware para parsear cuerpos de solicitud con codificación URL
 
-// 'app.engine' define que los archivos '.handlebars' se procesen con 'express-handlebars'.
-// 'defaultLayout: null' indica que no se utilizará una plantilla de diseño por defecto.
-app.engine('handlebars', handlebars.engine())
-// Define el directorio donde Express buscará los archivos de plantillas ('handlebars').
-// '__dirname + '/views'' construye la ruta absoluta al directorio 'views'.
-app.set('views', __dirname + '/views')
-// Esto permite que Express use Handlebars para procesar y renderizar vistas.
-app.set('view engine', 'handlebars')
+const httpServer = app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // Inicia el servidor HTTP y muestra un mensaje en consola
+const io = new Server(httpServer); // Crea una instancia de Socket.IO vinculada al servidor HTTP
 
-// 'app.listen' hace que la aplicación escuche en el puerto especificado ('PORT').
-// Cuando el servidor está en funcionamiento, se ejecuta la función de callback que imprime un mensaje en la consola.
-const httpServer = app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-// Esto establece una conexión WebSocket en el servidor HTTP. io manejará las conexiones WebSocket y emitirá eventos.
-const io = new Server(httpServer)
+// Rutas API
+app.use('/api/products', productsRouter(io)); // Configura las rutas para la API de productos
+app.use('/api/carts', cartsRouter(io)); // Configura las rutas para la API de carritos
 
-// 'app.use' aplica el enrutador 'viewsRouter' a todas las solicitudes que comienzan con /.
-// El enrutador se inicializa con la instancia de Socket.IO ('io') para permitir la comunicación en tiempo real.
-app.use('/', viewsRouter(io))
+// Rutas de vistas
+app.use('/', viewsRouter); // Configura las rutas para las vistas
 
-// 'io.on('connection')' es un evento que se activa cuando un cliente se conecta al servidor WebSocket.
-// Dentro de este manejador, se imprime un mensaje en la consola al conectar y desconectar clientes.
+// Manejo de eventos de Socket.IO
 io.on('connection', (socket) => {
-    console.log('New client connected')
+    console.log('New client connected'); // Muestra mensaje cuando un nuevo cliente se conecta
+
+    // Envía los productos actuales al nuevo cliente
+    socket.emit('updateProducts', products);
+
+    // Maneja el evento para agregar un nuevo producto
+    socket.on('addProduct', (product) => {
+        product.id = products.length ? products[products.length - 1].id + 1 : 1; // Asigna un ID único al nuevo producto
+        products.push(product); // Añade el producto a la lista
+        writeProducts(products); // Guarda los productos actualizados en el archivo
+        io.emit('updateProducts', products); // Notifica a todos los clientes sobre el nuevo producto
+    });
+
+    // Maneja el evento para eliminar un producto
+    socket.on('deleteProduct', (productId) => {
+        const updatedProducts = products.filter(product => product.id !== productId); // Filtra el producto eliminado
+        writeProducts(updatedProducts); // Guarda los productos actualizados en el archivo
+        io.emit('updateProducts', updatedProducts); // Notifica a todos los clientes sobre el producto eliminado
+    });
+
     socket.on('disconnect', () => {
-        console.log('Client disconnected')
-    })
-})
+        console.log('Client disconnected'); // Muestra mensaje cuando un cliente se desconecta
+    });
+});
