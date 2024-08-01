@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+</head>
+<body>
+
+<h1>{{product.title}}</h1>
+<p>{{product.description}}</p>
+<p>{{product.price}}</p>
+<p>{{product.stock}}</p>
+<p>{{product.category}}</p>
+{{#each product.thumbnails}}
+    <img src="{{this}}" alt="thumbnail" style="max-width: 100px; max-height: 100px;">
+{{/each}}
+<p>{{product.status}}</p>
+<button onclick="addToCart('{{product._id}}')">Add to Cart</button>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/products.js"></script>
+</body>
+</html>
