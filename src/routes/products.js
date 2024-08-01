@@ -6,41 +6,22 @@ const router = express.Router();
 export default (io) => {
     router.get('/', async (req, res) => {
         try {
-            // Extraer los parámetros de consulta y asignar valores predeterminados
-            const { limit = 10, page = 1, sort, query } = req.query;
-            const limitNumber = parseInt(limit, 10) || 10; // Default to 10 if not a number
-            const pageNumber = parseInt(page, 10) || 1; // Default to 1 if not a number
-
-            // Manejar opciones de ordenamiento
+            const { limit = 10, page = 1, sort = '', query = '' } = req.query;
+            const limitNumber = parseInt(limit, 10);
+            const pageNumber = parseInt(page, 10);
             const sortOption = sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {};
+            const queryOption = query ? { $or: [{ category: query }, { status: query === 'true' }] } : {};
 
-            // Manejar opciones de búsqueda
-            let queryOption = {};
-            if (query) {
-                // Interpretar `query` como categoría o disponibilidad
-                queryOption = { $or: [{ category: query }, { status: query === 'true' }] };
-            }
-
-            // Calcular el valor de `skip` asegurando que sea >= 0
-            const skip = Math.max((pageNumber - 1) * limitNumber, 0);
-
-            // Obtener los productos de la base de datos
             const products = await Product.find(queryOption)
                 .sort(sortOption)
                 .limit(limitNumber)
-                .skip(skip);
+                .skip((pageNumber - 1) * limitNumber);
 
-            // Contar el número total de productos que coinciden con la búsqueda
             const totalProducts = await Product.countDocuments(queryOption);
             const totalPages = Math.ceil(totalProducts / limitNumber);
             const hasPrevPage = pageNumber > 1;
             const hasNextPage = pageNumber < totalPages;
 
-            // Construir los enlaces de paginación
-            const prevLink = hasPrevPage ? `/api/products?limit=${limitNumber}&page=${pageNumber - 1}&sort=${sort || ''}&query=${query || ''}` : null;
-            const nextLink = hasNextPage ? `/api/products?limit=${limitNumber}&page=${pageNumber + 1}&sort=${sort || ''}&query=${query || ''}` : null;
-
-            // Enviar la respuesta
             res.json({
                 status: 'success',
                 payload: products,
@@ -50,8 +31,8 @@ export default (io) => {
                 page: pageNumber,
                 hasPrevPage,
                 hasNextPage,
-                prevLink,
-                nextLink,
+                prevLink: hasPrevPage ? `/api/products?limit=${limit}&page=${pageNumber - 1}&sort=${sort}&query=${query}` : null,
+                nextLink: hasNextPage ? `/api/products?limit=${limit}&page=${pageNumber + 1}&sort=${sort}&query=${query}` : null,
             });
         } catch (error) {
             res.status(500).json({ status: 'error', message: error.message });
