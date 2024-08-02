@@ -19,7 +19,6 @@ mongoose.connect('mongodb+srv://chano:chano@cluster.rarbbce.mongodb.net/?retryWr
     console.error('Error connecting to MongoDB', error);
 });
 
-// Configuración de Handlebars
 const hbs = handlebars.create({
     defaultLayout: 'main',
     runtimeOptions: {
@@ -32,22 +31,18 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', __dirname + '/views');
 
-// Middleware para servir archivos estáticos
 app.use(express.static('src/public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const httpServer = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 const io = new Server(httpServer);
+app.set('io', io); // Añade Socket.IO al objeto app para que pueda ser accedido en las rutas
 
-// Rutas API
 app.use('/api/products', productsRouter(io));
 app.use('/api/carts', cartsRouter);
-
-// Rutas de vistas
 app.use('/', viewsRouter);
 
-// Manejo de eventos de Socket.IO
 io.on('connection', (socket) => {
     console.log('New client connected');
 

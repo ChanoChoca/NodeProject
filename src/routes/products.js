@@ -7,32 +7,39 @@ export default (io) => {
     router.get('/', async (req, res) => {
         try {
             const { limit = 10, page = 1, sort = '', query = '' } = req.query;
-            const limitNumber = parseInt(limit, 10);
-            const pageNumber = parseInt(page, 10);
+            const limitNumber = parseInt(limit, 10) || 10;
+            const pageNumber = parseInt(page, 10) || 1;
+
+            // Configurar opciones de ordenamiento
             const sortOption = sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {};
+
+            // Configurar opciones de consulta
             const queryOption = query ? { $or: [{ category: query }, { status: query === 'true' }] } : {};
 
-            const products = await Product.find(queryOption)
-                .sort(sortOption)
-                .limit(limitNumber)
-                .skip((pageNumber - 1) * limitNumber);
+            // Obtener productos según la consulta con paginación
+            const options = {
+                page: pageNumber,
+                limit: limitNumber,
+                sort: sortOption
+            };
 
-            const totalProducts = await Product.countDocuments(queryOption);
-            const totalPages = Math.ceil(totalProducts / limitNumber);
-            const hasPrevPage = pageNumber > 1;
-            const hasNextPage = pageNumber < totalPages;
+            const result = await Product.paginate(queryOption, options);
 
+            // Emitir actualización de productos
+            io.emit('updateProducts', result.docs);
+
+            // Enviar la respuesta
             res.json({
                 status: 'success',
-                payload: products,
-                totalPages,
-                prevPage: hasPrevPage ? pageNumber - 1 : null,
-                nextPage: hasNextPage ? pageNumber + 1 : null,
-                page: pageNumber,
-                hasPrevPage,
-                hasNextPage,
-                prevLink: hasPrevPage ? `/api/products?limit=${limit}&page=${pageNumber - 1}&sort=${sort}&query=${query}` : null,
-                nextLink: hasNextPage ? `/api/products?limit=${limit}&page=${pageNumber + 1}&sort=${sort}&query=${query}` : null,
+                payload: result.docs,
+                totalPages: result.totalPages,
+                prevPage: result.prevPage,
+                nextPage: result.nextPage,
+                page: result.page,
+                hasPrevPage: result.hasPrevPage,
+                hasNextPage: result.hasNextPage,
+                prevLink: result.hasPrevPage ? `/api/products?limit=${limitNumber}&page=${result.prevPage}&sort=${sort}&query=${query}` : null,
+                nextLink: result.hasNextPage ? `/api/products?limit=${limitNumber}&page=${result.nextPage}&sort=${sort}&query=${query}` : null,
             });
         } catch (error) {
             res.status(500).json({ status: 'error', message: error.message });
@@ -61,7 +68,10 @@ export default (io) => {
 
             const newProduct = new Product({ title, description, code, price, stock, category, thumbnails });
             await newProduct.save();
+
+            // Emitir actualización de productos
             io.emit('updateProducts', await Product.find());
+
             res.status(201).json(newProduct);
         } catch (error) {
             res.status(400).json({ status: 'error', message: error.message });
@@ -76,7 +86,10 @@ export default (io) => {
             }
 
             const updatedProduct = await Product.findByIdAndUpdate(req.params.pid, req.body, { new: true, runValidators: true });
+
+            // Emitir actualización de productos
             io.emit('updateProducts', await Product.find());
+
             res.json(updatedProduct);
         } catch (error) {
             res.status(400).json({ status: 'error', message: error.message });
@@ -86,7 +99,10 @@ export default (io) => {
     router.delete('/:pid', async (req, res) => {
         try {
             await Product.findByIdAndDelete(req.params.pid);
+
+            // Emitir actualización de productos
             io.emit('updateProducts', await Product.find());
+
             res.status(204).end();
         } catch (error) {
             res.status(500).json({ status: 'error', message: error.message });
