@@ -63,21 +63,108 @@ router.post('/:cid/products/:pid', async (req, res) => {
             return res.status(404).send('Cart or Product not found');
         }
 
-        // Verificar si el producto ya está en el carrito
         const productIndex = cart.products.findIndex(p => p.product.toString() === req.params.pid);
         if (productIndex !== -1) {
-            // Si el producto ya está en el carrito, incrementar la cantidad
             cart.products[productIndex].quantity += 1;
         } else {
-            // Si el producto no está en el carrito, agregarlo con cantidad 1
             cart.products.push({ product: req.params.pid, quantity: 1 });
         }
 
         await cart.save();
-        req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product')); // Emitir evento de actualización
+        req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
         res.status(200).json(cart);
     } catch (error) {
         res.status(400).json({ status: 'error', message: error.message });
+    }
+});
+
+router.delete('/:cid/products/:pid', async (req, res) => {
+    try {
+        const cart = await Cart.findById(req.params.cid);
+        if (!cart) {
+            return res.status(404).send('Cart not found');
+        }
+
+        const productIndex = cart.products.findIndex(p => p.product.toString() === req.params.pid);
+        if (productIndex === -1) {
+            return res.status(404).send('Product not found in cart');
+        }
+
+        // Eliminar el producto del carrito
+        cart.products.splice(productIndex, 1);
+        await cart.save();
+
+        // Emitir evento de actualización
+        req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
+        res.status(200).json(cart);
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+});
+
+router.put('/:cid', async (req, res) => {
+    try {
+        const { products } = req.body; // [{ product: productId, quantity: quantity }]
+        const cart = await Cart.findById(req.params.cid);
+
+        if (!cart) {
+            return res.status(404).send('Cart not found');
+        }
+
+        // Reemplazar los productos del carrito
+        cart.products = products;
+        await cart.save();
+
+        // Emitir evento de actualización
+        req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
+        res.status(200).json(cart);
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+});
+
+router.put('/:cid/products/:pid', async (req, res) => {
+    try {
+        const { quantity } = req.body; // Nueva cantidad
+        const cart = await Cart.findById(req.params.cid);
+
+        if (!cart) {
+            return res.status(404).send('Cart not found');
+        }
+
+        const productIndex = cart.products.findIndex(p => p.product.toString() === req.params.pid);
+        if (productIndex === -1) {
+            return res.status(404).send('Product not found in cart');
+        }
+
+        // Actualizar la cantidad del producto
+        cart.products[productIndex].quantity = quantity;
+        await cart.save();
+
+        // Emitir evento de actualización
+        req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
+        res.status(200).json(cart);
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+});
+
+router.delete('/:cid', async (req, res) => {
+    try {
+        const cart = await Cart.findById(req.params.cid);
+        if (!cart) {
+            return res.status(404).send('Cart not found');
+        }
+
+        // Vaciar el carrito
+        cart.products = [];
+        await cart.save();
+
+        // Emitir evento de actualización
+        req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
+        res.status(200).json(cart);
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
     }
 });
 

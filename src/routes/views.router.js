@@ -1,36 +1,54 @@
+// views.router.js
 import express from 'express';
 import Product from '../models/product.js';
+import Cart from "../models/Cart.js";
 
 const router = express.Router();
 
+router.get('/carts/:cid', async (req, res) => {
+    try {
+        const cart = await Cart.findById(req.params.cid).populate('products.product');
+        if (cart) {
+            res.render('cart', { cart });
+        } else {
+            res.status(404).send('Cart not found');
+        }
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+});
+
 router.get('/products', async (req, res) => {
     try {
-        const { limit = 10, page = 1, sort, query } = req.query;
-        const limitNumber = parseInt(limit, 10);
-        const pageNumber = parseInt(page, 10);
+        const { limit = 10, page = 1, sort = '', query = '' } = req.query;
+        const limitNumber = parseInt(limit, 10) || 10;
+        const pageNumber = parseInt(page, 10) || 1;
+
+        // Configurar opciones de ordenamiento
         const sortOption = sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {};
+
+        // Configurar opciones de consulta
         const queryOption = query ? { $or: [{ category: query }, { status: query === 'true' }] } : {};
 
-        const products = await Product.find(queryOption)
-            .sort(sortOption)
-            .limit(limitNumber)
-            .skip((pageNumber - 1) * limitNumber);
+        // Obtener productos según la consulta con paginación
+        const options = {
+            page: pageNumber,
+            limit: limitNumber,
+            sort: sortOption
+        };
 
-        const totalProducts = await Product.countDocuments(queryOption);
-        const totalPages = Math.ceil(totalProducts / limitNumber);
-        const hasPrevPage = pageNumber > 1;
-        const hasNextPage = pageNumber < totalPages;
+        const result = await Product.paginate(queryOption, options);
 
         res.render('index', {
-            products,
-            totalPages,
-            prevPage: hasPrevPage ? pageNumber - 1 : null,
-            nextPage: hasNextPage ? pageNumber + 1 : null,
-            page: pageNumber,
-            hasPrevPage,
-            hasNextPage,
-            prevLink: hasPrevPage ? `/products?limit=${limit}&page=${pageNumber - 1}&sort=${sort}&query=${query}` : null,
-            nextLink: hasNextPage ? `/products?limit=${limit}&page=${pageNumber + 1}&sort=${sort}&query=${query}` : null,
+            products: result.docs,
+            totalPages: result.totalPages,
+            prevPage: result.prevPage,
+            nextPage: result.nextPage,
+            page: result.page,
+            hasPrevPage: result.hasPrevPage,
+            hasNextPage: result.hasNextPage,
+            prevLink: result.hasPrevPage ? `/products?limit=${limitNumber}&page=${result.prevPage}&sort=${sort}&query=${query}` : null,
+            nextLink: result.hasNextPage ? `/products?limit=${limitNumber}&page=${result.nextPage}&sort=${sort}&query=${query}` : null,
         });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });

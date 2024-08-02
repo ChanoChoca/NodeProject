@@ -12,6 +12,7 @@
 
 <section class="container-fluid overflow-x-hidden py-5">
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 justify-content-center">
+        <!-- index.handlebars -->
         {{#each products}}
             <div class="col">
                 <div class="card border-primary bg-black text-white">
@@ -24,10 +25,10 @@
                         <p class="card-text">Categoría: {{this.category}}</p>
                         <p class="card-text">Estado: {{this.status}}</p>
                         <div class="d-flex flex-column gap-3">
-                            <button class="btn btn-lg btn-primary" onclick="addToCart('{{_id}}', '{{this._id}}')">
+                            <button class="btn btn-lg btn-outline-success" onclick="addToCart('{{this._id}}')">
                                 <i class="fa-solid fa-cart-shopping me-3"></i>Agregar al carrito
                             </button>
-                            <a class="btn btn-lg btn-primary" href="/products/{{this._id}}">
+                            <a class="btn btn-lg btn-outline-primary" href="/products/{{this._id}}">
                                 <i class="fa-solid fa-circle-info me-3"></i>Ver detalles
                             </a>
                         </div>
@@ -43,7 +44,7 @@
         {{#if hasPrevPage}}
             <a href="{{prevLink}}" class="btn btn-lg btn-primary me-3">Anterior</a>
         {{/if}}
-        Pagina {{page}} de {{totalPages}}
+        Página {{page}} de {{totalPages}}
         {{#if hasNextPage}}
             <a href="{{nextLink}}" class="btn btn-lg btn-primary ms-3">Siguiente</a>
         {{/if}}
