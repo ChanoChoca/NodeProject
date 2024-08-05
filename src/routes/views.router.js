@@ -20,7 +20,7 @@ router.get('/carts/:cid', async (req, res) => {
 
 router.get('/products', async (req, res) => {
     try {
-        const { limit = 10, page = 1, sort = '', query = '' } = req.query;
+        const { limit = 10, page = 1, sort = '', category = '', availability = '' } = req.query;
         const limitNumber = parseInt(limit, 10) || 10;
         const pageNumber = parseInt(page, 10) || 1;
 
@@ -28,7 +28,13 @@ router.get('/products', async (req, res) => {
         const sortOption = sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {};
 
         // Configurar opciones de consulta
-        const queryOption = query ? { $or: [{ category: query }, { status: query === 'true' }] } : {};
+        const queryOption = {};
+        if (category) {
+            queryOption.category = { $regex: category.trim(), $options: 'i' };
+        }
+        if (availability) {
+            queryOption.status = availability === 'true';
+        }
 
         // Obtener productos según la consulta con paginación
         const options = {
@@ -39,6 +45,7 @@ router.get('/products', async (req, res) => {
 
         const result = await Product.paginate(queryOption, options);
 
+        // Renderizar la vista
         res.render('index', {
             products: result.docs,
             totalPages: result.totalPages,
@@ -47,8 +54,8 @@ router.get('/products', async (req, res) => {
             page: result.page,
             hasPrevPage: result.hasPrevPage,
             hasNextPage: result.hasNextPage,
-            prevLink: result.hasPrevPage ? `/products?limit=${limitNumber}&page=${result.prevPage}&sort=${sort}&query=${query}` : null,
-            nextLink: result.hasNextPage ? `/products?limit=${limitNumber}&page=${result.nextPage}&sort=${sort}&query=${query}` : null,
+            prevLink: result.hasPrevPage ? `/products?limit=${limitNumber}&page=${result.prevPage}&sort=${sort}&category=${category}&availability=${availability}` : null,
+            nextLink: result.hasNextPage ? `/products?limit=${limitNumber}&page=${result.nextPage}&sort=${sort}&category=${category}&availability=${availability}` : null
         });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
