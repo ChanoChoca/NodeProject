@@ -15,12 +15,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const queryString = queryParams.toString();
-            const url = `/products?${queryString}`;
 
             // Redirigir a la nueva URL
-            window.location.href = url;
+            window.location.href = `/products?${queryString}`;
         });
     }
+
+    // Añadir event listeners a los botones de "Agregar al carrito"
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const productId = button.getAttribute('data-id');
+            addToCart(productId);
+        });
+    });
 });
 
 function addToCart(productId) {
