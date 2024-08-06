@@ -16,7 +16,6 @@ A Node project made with Express, where it is carried out thanks to the React co
 - Node
 - Express
 - Handlebars
-- Socket.io
 - Mongoose
 - Mongoose Paginate V2
 
@@ -30,7 +29,7 @@ Process of installation (is not necessary if you have this proyect)
 
 ## The following installation is required:
 
-* Install: `npm install express express-handlebars socket.io mongoose mongoose-paginate-v2 @fortawesome/fontawesome-free`
+* Install: `npm install express express-handlebars mongoose mongoose-paginate-v2 @fortawesome/fontawesome-free`
 
 ## Testing
 

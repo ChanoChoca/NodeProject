@@ -1,6 +1,5 @@
 import express from 'express';
 import handlebars from 'express-handlebars';
-import { Server } from 'socket.io';
 import mongoose from 'mongoose';
 import productsRouter from './routes/products.js';
 import cartsRouter from './routes/carts.js';
@@ -35,18 +34,8 @@ app.use(express.static('src/public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const httpServer = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-const io = new Server(httpServer);
-app.set('io', io); // Añade Socket.IO al objeto app para que pueda ser accedido en las rutas
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-app.use('/api/products', productsRouter(io));
+app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 app.use('/', viewsRouter);
-
-io.on('connection', (socket) => {
-    console.log('New client connected');
-
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
-});
