@@ -30,7 +30,7 @@ Process of installation (is not necessary if you have this proyect)
 
 ## The following installation is required:
 
-* Install: `npm install express express-handlebars socket.io express-validator`
+* Install: `npm install express express-handlebars socket.io mongoose mongoose-paginate-v2 @fortawesome/fontawesome-free`
 
 ## Testing
 
@@ -41,14 +41,18 @@ Process of installation (is not necessary if you have this proyect)
 ## In the browser
 
 ```http
-  GET http://localhost:8080/
+  http://localhost:8080/carts/:cid
 ```
 
 ```http
-  GET http://localhost:8080/realtimeproducts
+  http://localhost:8080/products
 ```
 
-## In Postman:
+```http
+  http://localhost:8080/products/:pid
+```
+
+# In Postman:
 
 ## Products
 
@@ -74,7 +78,7 @@ Process of installation (is not necessary if you have this proyect)
 
 | Parameter     | Type      | Description                           |
 |:--------------|:----------|:--------------------------------------|
-| `id`          | `number`  | **Not required**. Your product id key |
+| `_id`         | `number`  | **Not required**. Your product id key |
 | `title`       | `string`  | **Required**. Your title              |
 | `description` | `string`  | **Required**. Your description        |
 | `code`        | `string`  | **Required**. Your code               |
@@ -84,7 +88,58 @@ Process of installation (is not necessary if you have this proyect)
 | `category`    | `string`  | **Required**. Your category           |
 | `thumbnails`  | `array`   | **Not required**. Your thumbnails     |
 
-### Note: `price` and `stock` must be >= 0.
+### Note: `price` and `stock` must be greater than or equal to 0.
+
+## Carts
+
+```http
+  GET http://localhost:8080/api/carts/
+```
+
+```http
+  GET http://localhost:8080/api/carts/:cid
+```
+
+```http
+  POST http://localhost:8080/api/carts/
+```
+
+```http
+  POST http://localhost:8080/api/carts/:cid/products/:pid
+```
+
+```http
+  DELETE http://localhost:8080/api/carts/:cid/products/:pid
+```
+
+```http
+  PUT http://localhost:8080/api/carts/:cid
+```
+
+```http
+  PUT http://localhost:8080/api/carts/:cid/products/:pid
+```
+
+```http
+  DELETE http://localhost:8080/api/carts/:cid
+```
+
+### Cart Schema
+
+| Parameter  | Type     | Description                        |
+|:-----------|:---------|:-----------------------------------|
+| `_id`      | `ObjectId` | **Not required**. Your cart id key |
+| `products` | `array`  | **Required**. Your products        |
+
+### For products parameter
+
+| Parameter  | Type       | Description                                    |
+|:-----------|:-----------|:-----------------------------------------------|
+| `_id`      | `ObjectId` | **Not required**. Your product id key          |
+| `quantity` | `number`   | **Required**. Your quantity                    |
+| `product`  | `ObjectId` | **Required**. The referenced product id key    |
+
+### Note: `quantity` must be greater than or equal to 1.
 
 
 ## Authors

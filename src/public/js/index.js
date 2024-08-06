@@ -4,56 +4,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchForm) {
         searchForm.addEventListener('submit', (event) => {
             event.preventDefault();
-
             const formData = new FormData(searchForm);
-            const queryParams = new URLSearchParams();
-
-            for (const [key, value] of formData.entries()) {
-                if (value) {
-                    queryParams.append(key, value);
-                }
-            }
-
-            const queryString = queryParams.toString();
-
-            // Redirigir a la nueva URL
+            const queryString = new URLSearchParams(formData).toString();
             window.location.href = `/products?${queryString}`;
         });
     }
 
-    // Añadir event listeners a los botones de "Agregar al carrito"
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
-
     addToCartButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const productId = button.getAttribute('data-id');
-            addToCart(productId);
+            const productId = button.dataset.id;
+            fetch(`/api/cart`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Producto agregado al carrito');
+                    } else {
+                        alert('Error al agregar el producto al carrito');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al agregar el producto al carrito');
+                });
         });
     });
 });
-
-function addToCart(productId) {
-    fetch(`/api/carts`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId, quantity: 1 }),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                alert('Product added to cart!');
-            } else {
-                alert('Error adding product to cart.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-}

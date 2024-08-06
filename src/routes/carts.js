@@ -28,11 +28,13 @@ router.get('/:cid', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { productId, quantity } = req.body;
-        const product = await Product.findById(productId);
+        const { products } = req.body;
 
-        if (!product) {
-            return res.status(404).json({ status: 'error', message: 'Product not found' });
+        for (const { product } of products) {
+            const productExists = await Product.findById(product);
+            if (!productExists) {
+                return res.status(404).json({ status: 'error', message: `Product with ID ${product} not found` });
+            }
         }
 
         let cart = await Cart.findOne();
@@ -40,11 +42,13 @@ router.post('/', async (req, res) => {
             cart = new Cart({ products: [] });
         }
 
-        const productIndex = cart.products.findIndex(item => item.product.toString() === productId);
-        if (productIndex > -1) {
-            cart.products[productIndex].quantity += quantity;
-        } else {
-            cart.products.push({ product: productId, quantity });
+        for (const { product, quantity } of products) {
+            const productIndex = cart.products.findIndex(item => item.product.toString() === product);
+            if (productIndex > -1) {
+                cart.products[productIndex].quantity += quantity;
+            } else {
+                cart.products.push({ product, quantity });
+            }
         }
 
         await cart.save();
