@@ -4,6 +4,11 @@ import Product from '../models/product.js';
 
 const router = Router();
 
+/**
+ *
+ * Lista los productos que pertenezcan al carrito. VER
+ *
+ */
 router.get('/', async (req, res) => {
     try {
         const carts = await Cart.find().populate('products.product');
@@ -13,6 +18,13 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ *
+ * Lista los productos que pertenezcan al carrito con el parámetro cid proporcionados.
+ *
+ * El _id del carrito es: 66b16aa3a5164ce39074e7b5
+ *
+ */
 router.get('/:cid', async (req, res) => {
     try {
         const cart = await Cart.findById(req.params.cid).populate('products.product');
@@ -26,6 +38,20 @@ router.get('/:cid', async (req, res) => {
     }
 });
 
+/**
+ *
+ * Crea un nuevo carrito con la siguiente estructura.
+ *
+ * El formato por Postman, por ejemplo, debe ser el siguiente:
+ * {
+ *   "products": [
+ *     {
+ *       "product": "66accb55ea9c8230040fa023",
+ *       "quantity": 10
+ *     }
+ *   ]
+ * }
+ */
 router.post('/', async (req, res) => {
     try {
         const { products } = req.body;
@@ -58,6 +84,20 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ *
+ * Agrega el producto al arreglo “products” del carrito seleccionado, agregándose como un objeto bajo el siguiente formato.
+ *
+ * El formato por Postman, por ejemplo, debe ser el siguiente:
+ * {
+ *   "products": [
+ *     {
+ *       "product": "66accb55ea9c8230040fa023",
+ *       "quantity": 10
+ *     }
+ *   ]
+ * }
+ */
 router.post('/:cid/products/:pid', async (req, res) => {
     try {
         const cart = await Cart.findById(req.params.cid);
@@ -82,6 +122,20 @@ router.post('/:cid/products/:pid', async (req, res) => {
     }
 });
 
+/**
+ *
+ * Elimina del carrito el producto seleccionado.
+ *
+ * El formato por Postman, por ejemplo, debe ser el siguiente:
+ * {
+ *   "products": [
+ *     {
+ *       "product": "66accb55ea9c8230040fa023",
+ *       "quantity": 10
+ *     }
+ *   ]
+ * }
+ */
 router.delete('/:cid/products/:pid', async (req, res) => {
     try {
         const cart = await Cart.findById(req.params.cid);
@@ -94,11 +148,9 @@ router.delete('/:cid/products/:pid', async (req, res) => {
             return res.status(404).send('Product not found in cart');
         }
 
-        // Eliminar el producto del carrito
         cart.products.splice(productIndex, 1);
         await cart.save();
 
-        // Emitir evento de actualización
         req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
         res.status(200).json(cart);
     } catch (error) {
@@ -106,20 +158,34 @@ router.delete('/:cid/products/:pid', async (req, res) => {
     }
 });
 
+/**
+ *
+ * Actualiza el carrito con un arreglo de productos con el formato especificado arriba.
+ *
+ * A diferencia del endpoint '/:cid/products/:pid', en este endpoint si hay otros productos en el carrito, los elimina.
+ *
+ * El formato por Postman, por ejemplo, debe ser el siguiente:
+ * {
+ *   "products": [
+ *     {
+ *       "product": "66accb55ea9c8230040fa023",
+ *       "quantity": 10
+ *     }
+ *   ]
+ * }
+ */
 router.put('/:cid', async (req, res) => {
     try {
-        const { products } = req.body; // [{ product: productId, quantity: quantity }]
+        const { products } = req.body;
         const cart = await Cart.findById(req.params.cid);
 
         if (!cart) {
             return res.status(404).send('Cart not found');
         }
 
-        // Reemplazar los productos del carrito
         cart.products = products;
         await cart.save();
 
-        // Emitir evento de actualización
         req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
         res.status(200).json(cart);
     } catch (error) {
@@ -127,9 +193,19 @@ router.put('/:cid', async (req, res) => {
     }
 });
 
+/**
+ *
+ * Actualiza SÓLO la cantidad de ejemplares del producto por cualquier cantidad pasada desde req.body
+ *
+ * El formato por Postman, por ejemplo, debe ser el siguiente:
+ * {
+ *     "product": "66accb55ea9c8230040fa023",
+ *     "quantity": 10
+ * }
+ */
 router.put('/:cid/products/:pid', async (req, res) => {
     try {
-        const { quantity } = req.body; // Nueva cantidad
+        const { quantity } = req.body;
         const cart = await Cart.findById(req.params.cid);
 
         if (!cart) {
@@ -141,11 +217,13 @@ router.put('/:cid/products/:pid', async (req, res) => {
             return res.status(404).send('Product not found in cart');
         }
 
-        // Actualizar la cantidad del producto
+        if (quantity === undefined) {
+            return res.status(400).send('Quantity is required');
+        }
+
         cart.products[productIndex].quantity = quantity;
         await cart.save();
 
-        // Emitir evento de actualización
         req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
         res.status(200).json(cart);
     } catch (error) {
@@ -153,6 +231,12 @@ router.put('/:cid/products/:pid', async (req, res) => {
     }
 });
 
+
+/**
+ *
+ * Elimina todos los productos del carrito
+ *
+ */
 router.delete('/:cid', async (req, res) => {
     try {
         const cart = await Cart.findById(req.params.cid);
@@ -160,11 +244,9 @@ router.delete('/:cid', async (req, res) => {
             return res.status(404).send('Cart not found');
         }
 
-        // Vaciar el carrito
         cart.products = [];
         await cart.save();
 
-        // Emitir evento de actualización
         req.app.get('io').emit('updateCarts', await Cart.find().populate('products.product'));
         res.status(200).json(cart);
     } catch (error) {

@@ -13,15 +13,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
     addToCartButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const productId = button.dataset.id;
-            fetch(`/api/cart`, {
+            const productId = button.getAttribute('data-id');
+            fetch(`/api/carts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ productId }),
+                body: JSON.stringify({ products: [{ product: productId, quantity: 1 }] }),
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.status === 'success') {
                         alert('Producto agregado al carrito');

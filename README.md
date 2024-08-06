@@ -2,23 +2,23 @@
 
 A Node project made with Express, where it is carried out thanks to the React course from Coderhouse
 
-[//]: # (## Screenshots)
+## Screenshots
 
-[//]: # (![WoT App Screenshot]&#40;images/img-home.png&#41;)
+![WoT App Screenshot](src/public/images/3.png)
 
-[//]: # (![WoT App Screenshot]&#40;images/img-products.png&#41;)
+![WoT App Screenshot](src/public/images/2.png)
 
-[//]: # (![WoT App Screenshot]&#40;images/img-cart.png&#41;)
+![WoT App Screenshot](src/public/images/1.png)
 
 
 ## Tools Used
 
-- npm
 - Node
 - Express
 - Handlebars
 - Socket.io
 - Mongoose
+- Mongoose Paginate V2
 
 ## Installation and Testing
 

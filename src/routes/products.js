@@ -4,19 +4,22 @@ import Product from '../models/product.js';
 const router = express.Router();
 
 export default (io) => {
+
+    /**
+     *
+     * Lista todos los productos de la base.
+     *
+     */
     router.get('/', async (req, res) => {
         try {
             const { limit = 10, page = 1, sort = '', query = '' } = req.query;
             const limitNumber = parseInt(limit, 10) || 10;
             const pageNumber = parseInt(page, 10) || 1;
 
-            // Configurar opciones de ordenamiento
             const sortOption = sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {};
 
-            // Configurar opciones de consulta
             const queryOption = query ? { $or: [{ category: query }, { status: query === 'true' }] } : {};
 
-            // Obtener productos según la consulta con paginación
             const options = {
                 page: pageNumber,
                 limit: limitNumber,
@@ -25,10 +28,8 @@ export default (io) => {
 
             const result = await Product.paginate(queryOption, options);
 
-            // Emitir actualización de productos
             io.emit('updateProducts', result.docs);
 
-            // Enviar la respuesta
             res.json({
                 status: 'success',
                 payload: result.docs,
@@ -46,6 +47,11 @@ export default (io) => {
         }
     });
 
+    /**
+     *
+     * Trae sólo el producto con el id proporcionado.
+     *
+     */
     router.get('/:pid', async (req, res) => {
         try {
             const product = await Product.findById(req.params.pid);
@@ -59,6 +65,21 @@ export default (io) => {
         }
     });
 
+    /**
+     *
+     * Agrega un nuevo producto con los campos.
+     *
+     * El formato por Postman, por ejemplo, debe ser el siguiente:
+     * {
+     *     "title": "Product",
+     *     "description": "Descripción del producto",
+     *     "code": "PROD001",
+     *     "price": 25,
+     *     "stock": 10,
+     *     "category": "Categoria",
+     *     "thumbnails": ["https://cdn.pixabay.com/photo/2023/07/27/11/42/mountain-8153221_1280.jpg", "https://images.unsplash.com/photo-1721332154191-ba5f1534266e?q=80&w=1035&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"]
+     * }
+     */
     router.post('/', async (req, res) => {
         try {
             const { title, description, code, price, stock, category, thumbnails } = req.body;
@@ -69,7 +90,6 @@ export default (io) => {
             const newProduct = new Product({ title, description, code, price, stock, category, thumbnails });
             await newProduct.save();
 
-            // Emitir actualización de productos
             io.emit('updateProducts', await Product.find());
 
             res.status(201).json(newProduct);
@@ -78,6 +98,21 @@ export default (io) => {
         }
     });
 
+    /**
+     *
+     * Toma un producto y lo actualiza por los campos enviados desde body. NUNCA se actualiza o elimina el id al momento de hacer dicha actualización.
+     *
+     * El formato por Postman, por ejemplo, debe ser el siguiente:
+     * {
+     *     "title": "Product",
+     *     "description": "Descripción del producto",
+     *     "code": "PROD001",
+     *     "price": 100,
+     *     "stock": 10,
+     *     "category": "Categoria",
+     *     "thumbnails": ["https://cdn.pixabay.com/photo/2023/07/27/11/42/mountain-8153221_1280.jpg", "https://images.unsplash.com/photo-1721332154191-ba5f1534266e?q=80&w=1035&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"]
+     * }
+     */
     router.put('/:pid', async (req, res) => {
         try {
             const { title, description, code, price, stock, category, thumbnails } = req.body;
@@ -87,7 +122,6 @@ export default (io) => {
 
             const updatedProduct = await Product.findByIdAndUpdate(req.params.pid, req.body, { new: true, runValidators: true });
 
-            // Emitir actualización de productos
             io.emit('updateProducts', await Product.find());
 
             res.json(updatedProduct);
@@ -96,11 +130,15 @@ export default (io) => {
         }
     });
 
+    /**
+     *
+     * Elimina el producto con el pid indicado.
+     *
+     */
     router.delete('/:pid', async (req, res) => {
         try {
             await Product.findByIdAndDelete(req.params.pid);
 
-            // Emitir actualización de productos
             io.emit('updateProducts', await Product.find());
 
             res.status(204).end();
